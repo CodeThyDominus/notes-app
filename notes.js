@@ -1,17 +1,12 @@
 const fs = require("fs");
+const chalk = require("chalk");
 
-const getNotes = function () {
-  return "getnotes....";
-};
-
-const addNote = function (title, body, timing) {
+const addNote = (title, body, timing) => {
   const notes = loadNotes();
 
-  const duplicateNotes = notes.filter(function (note) {
-    return note.title === title;
-  });
+  const duplicateNote = notes.find((note) => note.title === title);
 
-  if (duplicateNotes.length === 0) {
+  if (!duplicateNote) {
     notes.push({
       title: title,
       body: body,
@@ -19,18 +14,54 @@ const addNote = function (title, body, timing) {
     });
 
     saveNotes(notes);
-    console.log("New Note Added!!!!");
+    console.log(chalk.green.inverse("New Note Added!!!!"));
   } else {
-    console.log("Note with same title exists!!!!");
+    console.log(chalk.red.inverse("Note with same title exists!!!!"));
   }
 };
 
-const saveNotes = function (notes) {
+const removeNote = (title) => {
+  const notes = loadNotes();
+
+  const findNotes = notes.filter((note) => note.title !== title);
+
+  if (findNotes.length !== notes.length) {
+    console.log(chalk.green.inverse("Note Removed!!!!"));
+    saveNotes(findNotes);
+  } else {
+    console.log(chalk.red.inverse("Note with given title doesn't exist!!!!"));
+  }
+};
+
+const listNotes = () => {
+  const notes = loadNotes();
+
+  console.log(chalk.blue.inverse("YOUR NOTES -----"));
+
+  notes.forEach((note) => {
+    console.log(chalk.yellow.inverse(note.title));
+  });
+};
+
+const readNotes = (title) => {
+  const notes = loadNotes();
+
+  const searchNote = notes.find((note) => note.title === title);
+
+  if (searchNote) {
+    console.log(chalk.green.inverse("Title : " + searchNote.title));
+    console.log(chalk.inverse("Body : " + searchNote.body));
+  } else {
+    console.log(chalk.red.inverse("No Note Found!!!!"));
+  }
+};
+
+const saveNotes = (notes) => {
   const dataJSON = JSON.stringify(notes);
   fs.writeFileSync("notes.json", dataJSON);
 };
 
-const loadNotes = function () {
+const loadNotes = () => {
   try {
     const dataBuffer = fs.readFileSync("notes.json");
     const dataJSON = dataBuffer.toString();
@@ -40,24 +71,9 @@ const loadNotes = function () {
   }
 };
 
-const removeNote = function (title) {
-  const notes = loadNotes();
-
-  const findNotes = notes.filter(function (note) {
-    return note.title !== title;
-  });
-
-  if (findNotes.length !== notes.length) {
-    notes.splice(title);
-    console.log("Note Removed!!!!");
-    saveNotes(findNotes);
-  } else {
-    console.log("Note with given title doesn't exist!!!!");
-  }
-};
-
 module.exports = {
-  getNotes: getNotes,
   addNote: addNote,
   removeNote: removeNote,
+  listNotes: listNotes,
+  readNotes: readNotes,
 };
